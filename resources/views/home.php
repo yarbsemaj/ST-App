@@ -30,7 +30,7 @@
             <p>Making Student Temp easier to use on mobile</p>
             <br>
             <br>
-            <a class="btn btn-lg btn-default" href="/apk/app-release.apk">Download App</a>
+            <a class="btn btn-lg btn-default" href="https://s3.eu-west-2.amazonaws.com/elasticbeanstalk-eu-west-2-122475845038/resources/apk/app-release.apk">Download App</a>
           </div>
         </div>
       </div>
