@@ -93,7 +93,6 @@ class Utils
     static function getFromAvailability($cookies, $startTime, $endTime, $type, $data = array())
     {
         $events = self::getAvailability($startTime, $endTime, $cookies)['events'];
-
         foreach ($events as $event) {
             if ($event['status'] == $type) {
                 $booking = $event['booking'];
@@ -156,7 +155,7 @@ class Utils
         $str = self::get($url, $cookies);
 
         $str = str_replace('new Date(', '"', $str);
-        $str = str_replace(')', '"', $str);
+        $str = str_replace('),', '",', $str);
         $str = str_replace('""}', '"}', $str);
         $str = str_replace('events', '"events"', $str);
 
