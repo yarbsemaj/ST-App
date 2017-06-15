@@ -36,5 +36,7 @@ Route::post('timesheet/cancelled',"TimeSheet@canceled")->middleware([ValidateLog
 
 Route::post('user/get',"User@get")->middleware([ValidateLogin::class]);
 
+Route::post('test/login',"RequestTest@get");
+
 
 Route::post('timesheet/submit/approve',"TimeSheet@submitTimeSheet")->middleware([ValidateLogin::class]);

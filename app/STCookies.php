@@ -9,6 +9,8 @@
 namespace app;
 
 
+use app\Http\Utils;
+
 class STCookies
 {
     public $cookies = array();
@@ -18,7 +20,8 @@ class STCookies
         $url = 'https://www.studenttemp.co.uk/login';
         $options = array(
             'http' => array(
-                'method'  => 'GET'
+                'method'  => 'GET',
+                'header' => "User-Agent: Hi, its james, pls dont block me\r\n"
             )
         );
         $context  = stream_context_create($options);
@@ -46,7 +49,7 @@ class STCookies
         $options = array(
             'http' => array(
                 'header' => "Content-type: application/x-www-form-urlencoded\r\n"
-                    . $this->getCookies()."\r\n"
+                    . $this->getCookies()."\r\n". "User-Agent: Hi, its james, pls dont block me\r\n"
             ,
                 'method' => 'POST',
                 'content' => http_build_query($data)

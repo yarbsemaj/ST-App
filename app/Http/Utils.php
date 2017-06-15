@@ -8,9 +8,10 @@
 
 namespace app\Http;
 
-
 class Utils
 {
+    static $urlHeader = "User-Agent: Hi, its james, pls dont block me\r\n";
+
     static function getSelectedOptionValue($node)
     {
         $nodeValue = $node->ownerDocument->saveHTML($node);
@@ -67,7 +68,7 @@ class Utils
         $options = array(
             'http' => array(
                 'header' => "Content-type: application/x-www-form-urlencoded\r\n"
-                    . $cookies . "\r\n",
+                    . $cookies."\r\n". Utils::$urlHeader,
                 'method' => 'POST',
                 'content' => http_build_query($data)
             )
@@ -81,7 +82,7 @@ class Utils
     {
         $options = array(
             'http' => array(
-                'header' => $cookies,
+                'header' => $cookies."\r\n". Utils::$urlHeader,
                 'method' => 'GET'
             )
         );
@@ -171,15 +172,7 @@ class Utils
 
     static function getAuthTokens($url, $cookies)
     {
-        $options = array(
-            'http' => array(
-                'header' => $cookies,
-                'method' => 'GET'
-            )
-        );
-
-        $context = stream_context_create($options);
-        $result = file_get_contents($url, false, $context);
+        $result = self::get($url,$cookies);
         $doc = new \DomDocument;
         $doc->validateOnParse = true;
         @$doc->loadHTML($result);
