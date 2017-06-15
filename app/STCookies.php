@@ -38,7 +38,11 @@ class STCookies
         }
         $data = array('user_session[email]' => $username,
             'user_session[password]' => $password,
-            'authenticity_token' => $at);
+            'authenticity_token' => $at,
+            'inviscap'=>'true',
+            'commit'=>'Login',
+            'utf8'=>'✓'
+            );
         $options = array(
             'http' => array(
                 'header' => "Content-type: application/x-www-form-urlencoded\r\n"
