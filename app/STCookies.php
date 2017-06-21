@@ -8,32 +8,23 @@
 
 namespace app;
 
-
-use app\Http\Utils;
+use App\Http\Utils;
+use App\Http\Constants;
 
 class STCookies
 {
-    public $cookies = array();
-    private $valid = false;
+    private $cookies = array();
+    private $location = array();
     public function get($username,$password)
     {
-        $url = 'https://www.studenttemp.co.uk/login';
-        $options = array(
-            'http' => array(
-                'method'  => 'GET',
-                'header' => "User-Agent: Hi, its james, pls dont block me\r\n"
-            )
-        );
-        $context  = stream_context_create($options);
-        $result = file_get_contents($url, false, $context);
         $doc = new \DomDocument;
         $doc->validateOnParse = true;
-        @$doc->loadHTML($result);
+        @$doc->loadHTML(Utils::get(Constants::$url.'/login',null,$header));
         $xp = new \DOMXpath($doc);
         $inputs = $xp->query('//input[@name="authenticity_token"]');
         $input = $inputs->item(0);
         $at = $input->getAttribute('value');
-        foreach ($http_response_header as $hdr) {
+        foreach ($header as $hdr) {
             if (preg_match('/^Set-Cookie:\s*([^;]+)/', $hdr, $matches)) {
                 parse_str($matches[1], $tmp);
                 $this->cookies += $tmp;
@@ -46,39 +37,27 @@ class STCookies
             'commit'=>'Login',
             'utf8'=>'✓'
             );
-        $options = array(
-            'http' => array(
-                'header' => "Content-type: application/x-www-form-urlencoded\r\n"
-                    . $this->getCookies()."\r\n". "User-Agent: Hi, its james, pls dont block me\r\n"
-            ,
-                'method' => 'POST',
-                'content' => http_build_query($data)
-            )
-        );
-        $url = 'https://www.studenttemp.co.uk/user_sessions';
-        $context = stream_context_create($options);
-        file_get_contents($url, false, $context);
-        foreach ($http_response_header as $hdr) {
+        $url = Constants::$url.'/user_sessions';
+        Utils::post($url,$data,Utils::getCookies($this->cookies),$header);
+        foreach ($header as $hdr) {
             if (preg_match('/^Set-Cookie:\s*([^;]+)/', $hdr, $matches)) {
                 parse_str($matches[1], $tmp);
                 $this->cookies += $tmp;
+            }elseif (preg_match('/^Location:\s*([^"]+)/', $hdr, $matches)) {
+                $this->location[] = $matches[1];
             }
-        }
-        if(count($this->cookies) ==2){
-            $this->valid=true;
         }
     }
     public function isValid(){
-        return $this->valid;
+        return count($this->cookies) ==2;
     }
 
-    function getCookies(){
-        $string = "Cookie: ";
-        foreach ($this->cookies as $index => $cookie)
-        {
-            $string= $string.$index."=".$cookie.";";
-        }
-        return substr($string,0,-1);
+    public function getType(){
+        return explode('/',$this->location[0])[3];
+    }
+
+    public function getCookies(){
+        return $this->cookies;
     }
 
 }

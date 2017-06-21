@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use app\Http\Constants;
 use Illuminate\Http\Request;
 use App\Http\Utils;
 
@@ -9,20 +10,17 @@ class TimeSheet extends Controller
 {
     public function approved(Request $request)
     {
-        $cookies = Utils::getCookies($request->cookies);
-        $tokens = Utils::getAuthTokens('https://www.studenttemp.co.uk/timesheets?#tosubmit',$cookies);
-
-        $url = 'https://www.studenttemp.co.uk/showmorets';
+        $url = Constants::$url.'/showmorets';
         $post = array(
             'type' => 'agreed',
             'what' => 'wts',
             'paginate_size' => $request->pageSize,
             'page' => $request->page,
             'search' => '',
-            'authenticity_token' => $tokens[1]
+            'authenticity_token' => $request->authToken[1]
         );
 
-        $result=Utils::post($url,$post,$cookies);
+        $result=Utils::post($url,$post,$request->cookies);
 
         $data = array();
 
@@ -32,7 +30,7 @@ class TimeSheet extends Controller
                 $detailsID = $job['DetailsID'];
 
                 $timesheetInfo = Utils::get(
-                    "https://www.studenttemp.co.uk/timesheets/pending?type=t&ts=$detailsID", $cookies);
+                    Constants::$url."/timesheets/pending?type=t&ts=$detailsID", $request->cookies);
                 $data[] = $this->getTimeSheetData(Utils::getElementsByClass($timesheetInfo,'data'), $job['DetailsID']);
             }
         }
@@ -41,20 +39,17 @@ class TimeSheet extends Controller
 
     public function submitted(Request $request)
     {
-        $cookies = Utils::getCookies($request->cookies);
-        $tokens = Utils::getAuthTokens('https://www.studenttemp.co.uk/timesheets?#tosubmit',$cookies);
-
-        $url = 'https://www.studenttemp.co.uk/showmorets';
+        $url = Constants::$url.'/showmorets';
         $post = array(
             'type' => 'pending',
             'what' => 'wts',
             'paginate_size' => $request->pageSize,
             'page' => $request->page,
             'search' => '',
-            'authenticity_token' => $tokens[1]
+            'authenticity_token' => $request->authToken[1]
         );
 
-        $result=Utils::post($url,$post,$cookies);
+        $result=Utils::post($url,$post,$request->cookies);
 
         $data = array();
 
@@ -64,7 +59,7 @@ class TimeSheet extends Controller
                 $detailsID = $job['DetailsID'];
 
                 $timesheetInfo = Utils::get(
-                    "https://www.studenttemp.co.uk/timesheets/pending?type=t&ts=$detailsID", $cookies);
+                    Constants::$url."/timesheets/pending?type=t&ts=$detailsID", $request->cookies);
                 $data[] = $this->getTimeSheetData(Utils::getElementsByClass($timesheetInfo,'data'), $job['DetailsID']);
             }
         }
@@ -73,21 +68,17 @@ class TimeSheet extends Controller
 
     public function disputed(Request $request)
     {
-
-        $cookies = Utils::getCookies($request->cookies);
-        $tokens = Utils::getAuthTokens('https://www.studenttemp.co.uk/timesheets?#tosubmit',$cookies);
-
-        $url = 'https://www.studenttemp.co.uk/showmorets';
+        $url = Constants::$url.'/showmorets';
         $post = array(
             'type' => 'notagreed',
             'what' => 'wts',
             'paginate_size' => $request->pageSize,
             'page' => $request->page,
             'search' => '',
-            'authenticity_token' => $tokens[1]
+            'authenticity_token' => $request->authToken[1]
         );
 
-        $result=Utils::post($url,$post,$cookies);
+        $result=Utils::post($url,$post,$request->cookies);
 
         $data = array();
 
@@ -98,7 +89,7 @@ class TimeSheet extends Controller
                 $detailsID = $job['DetailsID'];
 
                 $timesheetInfo = Utils::get(
-                    "https://www.studenttemp.co.uk/timesheets/disputed?type=t&ts=$detailsID", $cookies);
+                    Constants::$url."/timesheets/disputed?type=t&ts=$detailsID", $request->cookies);
                 $data[] = $this->getTimeSheetData(Utils::getElementsByClass($timesheetInfo,'data'), $job['DetailsID']);
             }
         }
@@ -107,20 +98,17 @@ class TimeSheet extends Controller
 
     public function toSubmit(Request $request)
     {
-        $cookies = Utils::getCookies($request->cookies);
-        $tokens = Utils::getAuthTokens('https://www.studenttemp.co.uk/timesheets?#tosubmit',$cookies);
-
-        $url = 'https://www.studenttemp.co.uk/showmorets';
+        $url = Constants::$url.'/showmorets';
         $post = array(
             'type' => 'tosubmit',
             'what' => 'wts',
             'paginate_size' => $request->pageSize,
             'page' => $request->page,
             'search' => '',
-            'authenticity_token' => $tokens[1]
+            'authenticity_token' => $request->authToken[1]
         );
 
-        $result=Utils::post($url,$post,$cookies);
+        $result=Utils::post($url,$post,$request->cookies);
 
         $data = array();
 
@@ -131,7 +119,7 @@ class TimeSheet extends Controller
                 $detailsID = $job['DetailsID'];
 
                 $timesheetInfo = Utils::get(
-                    "https://www.studenttemp.co.uk/timesheets/tosubmit?type=b&ts=$detailsID", $cookies);
+                    Constants::$url."/timesheets/tosubmit?type=b&ts=$detailsID", $request->cookies);
                 $data[] = $this->getTimeSheetToSubmit(Utils::getElementsByClass($timesheetInfo,'data'), $job['DetailsID']);
             }
         }
@@ -140,20 +128,17 @@ class TimeSheet extends Controller
 
     public function canceled(Request $request)
     {
-        $cookies = Utils::getCookies($request->cookies);
-        $tokens = Utils::getAuthTokens('https://www.studenttemp.co.uk/timesheets?#tosubmit',$cookies);
-
-        $url = 'https://www.studenttemp.co.uk/showmorets';
+        $url = Constants::$url.'/showmorets';
         $post = array(
             'type' => 'cancelled',
             'what' => 'wts',
             'paginate_size' => $request->pageSize,
             'page' => $request->page,
             'search' => '',
-            'authenticity_token' => $tokens[1]
+            'authenticity_token' => $request->authToken[1]
         );
 
-        $result=Utils::post($url,$post,$cookies);
+        $result=Utils::post($url,$post,$request->cookies);
 
         $data = array();
 
@@ -164,7 +149,7 @@ class TimeSheet extends Controller
                 $detailsID = $job['DetailsID'];
 
                 $timesheetInfo = Utils::get(
-                    "https://www.studenttemp.co.uk/timesheets/cancelled?type=t&ts=$detailsID", $cookies);
+                    Constants::$url."/timesheets/cancelled?type=t&ts=$detailsID", $request->cookies);
                 $data[] = $this->getTimeSheetData(Utils::getElementsByClass($timesheetInfo,'data'), $job['DetailsID']);
             }
         }
@@ -173,10 +158,7 @@ class TimeSheet extends Controller
 
     public function submitTimeSheet(Request $request)
     {
-        $cookies = Utils::getCookies($request->cookies);
-        $tokens = Utils::getAuthTokens('https://www.studenttemp.co.uk/timesheets?#tosubmit',$cookies);
-
-        $url = 'https://www.studenttemp.co.uk/timesheets.json';
+        $url = Constants::$url.'/timesheets.json';
         $post = array(
             'timesheet[status]' => 'S',
             'timesheet[startTime]' => $request->startTime,
@@ -186,7 +168,7 @@ class TimeSheet extends Controller
 
             'timesheet_comments_comment' => $request->comment,
             'rating' => $request->rating,
-            'authenticity_token' => $tokens[1]
+            'authenticity_token' => $request->authToken[1]
         );
 
         if($post['timesheet_comments_comment']==null){
@@ -194,7 +176,7 @@ class TimeSheet extends Controller
         }
 
 
-       Utils::post($url,$post,$cookies);
+       Utils::post($url,$post,$request->cookies);
 
         return Utils::response($post);
     }

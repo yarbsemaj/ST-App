@@ -20,7 +20,7 @@ class CheckSTLogin
         $stCookie = new STCookies();
         $stCookie->get($request->email, $request->password);
             if ($stCookie->isValid()) {
-                $request->cookies = $stCookie->cookies;
+                $request->cookies = $stCookie->getCookies();
                 return $next($request);
             } else {
                 return response(array("success" => false, "errorCode" => 1, "errorMessage" => "Your Student Temp username or password is invalid"));

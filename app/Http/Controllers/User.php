@@ -2,25 +2,25 @@
 
 namespace App\Http\Controllers;
 
+use app\Http\Constants;
 use Illuminate\Http\Request;
 use App\Http\Utils;
 
 class User extends Controller
 {
     function get(Request $request){
-        $cookies = Utils::getCookies($request->cookies);
 
-        $url = 'https://www.studenttemp.co.uk/profile';
+        $url = Constants::$url.'/profile';
 
-        $result=Utils::get($url,$cookies);
+        $result=Utils::get($url,$request->cookies);
         $totalPay=$this->getTotalPay($result);
 
         $id ='profile';
         $tabs = Utils::getElementsByID($result,$id);
         $userID= explode ( '_' ,$tabs[0]->attributes['id']->value)[1];
 
-        $url = "https://www.studenttemp.co.uk/student_profile_sections/1/edit.html?view=worker&worker_id=$userID";
-        $result=Utils::get($url,$cookies);
+        $url = Constants::$url."/student_profile_sections/1/edit.html?view=worker&worker_id=$userID";
+        $result=Utils::get($url,$request->cookies);
         $list = Utils::getElementsByClass($result,'data');
         $data = $this->getUserInfo($list);
 

@@ -8,10 +8,10 @@
 
 namespace app\Http;
 
+use App\Http\Constants;
+
 class Utils
 {
-    static $urlHeader = "User-Agent: Hi, its james, pls dont block me\r\n";
-
     static function getSelectedOptionValue($node)
     {
         $nodeValue = $node->ownerDocument->saveHTML($node);
@@ -63,32 +63,36 @@ class Utils
         return substr($string, 0, -1);
     }
 
-    static function post($url, $data, $cookies)
+    static function post($url, $data, $cookies,&$header=null)
     {
         $options = array(
             'http' => array(
                 'header' => "Content-type: application/x-www-form-urlencoded\r\n"
-                    . $cookies."\r\n". Utils::$urlHeader,
+                    . $cookies."\r\n". Constants::$urlHeader,
                 'method' => 'POST',
                 'content' => http_build_query($data)
             )
         );
 
         $context = stream_context_create($options);
-        return (file_get_contents($url, false, $context));
+        $return = file_get_contents($url, false, $context);
+        $header = $http_response_header;
+        return ($return);
     }
 
-    static function get($url, $cookies)
+    static function get($url, $cookies,&$header = null)
     {
         $options = array(
             'http' => array(
-                'header' => $cookies."\r\n". Utils::$urlHeader,
+                'header' => $cookies."\r\n". Constants::$urlHeader,
                 'method' => 'GET'
             )
         );
 
         $context = stream_context_create($options);
-        return (file_get_contents($url, false, $context));
+        $return = file_get_contents($url, false, $context);
+        $header = $http_response_header;
+        return ($return);
     }
 
     static function getFromAvailability($cookies, $startTime, $endTime, $type, $data = array())
@@ -152,7 +156,7 @@ class Utils
 
     static function getAvailability($startTime, $endTime, $cookies)
     {
-        $url = "https://www.studenttemp.co.uk/availabilities.json?start=$startTime&end=$endTime";
+        $url = Constants::$url."/availabilities.json?start=$startTime&end=$endTime";
         $str = self::get($url, $cookies);
 
         $str = str_replace('new Date(', '"', $str);

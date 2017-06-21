@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use app\Http\Constants;
 use Illuminate\Http\Request;
 use App\Http\Utils;
 
@@ -11,20 +12,12 @@ class Jobs extends Controller
     {
         $jobs = array();
         if($request->page==1) {
-            $cookies = Utils::getCookies($request->cookies);
-
             if($request->endTime == null) $request->endTime = 2147480000;
-
-            $jobData = Utils::getFromAvailability($cookies, strtotime("midnight"), $request->endTime, "A");
-
+            $jobData = Utils::getFromAvailability($request->cookies, strtotime("midnight"), $request->endTime, "A");
             usort($jobData, Utils::build_sorter('timeStamp'));
-
             foreach ($jobData as $job) {
-
                 $location = explode(" - ", $job['location'])[1];
-
                 $supervisorPhone = explode (" - ",$job['locationContact']);
-
                 $jobs [] = $returnData = array(
                     "DetailsID" => (string)$job['id'],
                     "ID" => (string)$job['ref'],
@@ -51,29 +44,24 @@ class Jobs extends Controller
 
     public function cancelled(Request $request)
     {
-        $cookies = Utils::getCookies($request->cookies);
-        $tokens = Utils::getAuthTokens('https://www.studenttemp.co.uk/bookings#upcoming',$cookies);
-
-        $url = 'https://www.studenttemp.co.uk/showmorebk';
+        $url = Constants::$url.'/showmorebk';
         $post = array(
             'type' => 'cancelled',
             'what' => 'bk',
             'paginate_size' => $request->pageSize,
             'page' => $request->page,
             'search' => '',
-            'authenticity_token' => $tokens[1]
+            'authenticity_token' => $request->authToken[1]
         );
-
-        $result=Utils::post($url,$post,$cookies);
+        $result=Utils::post($url,$post,$request->cookies);
 
         $data = array();
-
         $list = Utils::getList($result);
         if ($request->page <= $list['pageNumber']) {
             foreach ($list['jobs'] as $job) {
                 $detailsID = $job['DetailsID'];
 
-                $timesheetInfo = Utils::get("https://www.studenttemp.co.uk/bookings/$detailsID?type=cancelled",$cookies);
+                $timesheetInfo = Utils::get(Constants::$url."/bookings/$detailsID?type=cancelled",$request->cookies);
                 $data[] = $this->getJobData(Utils::getElementsByClass($timesheetInfo,'data'), $job['DetailsID']);
             }
         }
@@ -82,20 +70,17 @@ class Jobs extends Controller
 
     public function offered(Request $request)
     {
-        $cookies = Utils::getCookies($request->cookies);
-        $tokens = Utils::getAuthTokens('https://www.studenttemp.co.uk/bookings#upcoming',$cookies);
-
-        $url = 'https://www.studenttemp.co.uk/showmoreof';
+        $url = Constants::$url.'/showmoreof';
         $post = array(
             'type' => 'offered',
             'what' => 'bk',
             'paginate_size' => $request->pageSize,
             'page' => $request->page,
             'search' => '',
-            'authenticity_token' => $tokens[1]
+            'authenticity_token' => $request->authToken[1]
         );
 
-        $result=Utils::post($url,$post,$cookies);
+        $result=Utils::post($url,$post,$request->cookies);
 
         $data = array();
 
@@ -104,7 +89,7 @@ class Jobs extends Controller
             foreach ($list['jobs'] as $job) {
                 $detailsID = $job['DetailsID'];
 
-                $timesheetInfo = Utils::get("https://www.studenttemp.co.uk/bookings/$detailsID?type=offered",$cookies);
+                $timesheetInfo = Utils::get(Constants::$url."/bookings/$detailsID?type=offered",$request->cookies);
                 $data[] = $this->getJobData(Utils::getElementsByClass($timesheetInfo,'data'), $job['DetailsID']);
             }
         }
@@ -113,20 +98,17 @@ class Jobs extends Controller
 
     public function rejected(Request $request)
     {
-        $cookies = Utils::getCookies($request->cookies);
-        $tokens = Utils::getAuthTokens('https://www.studenttemp.co.uk/bookings#upcoming',$cookies);
-
-        $url = 'https://www.studenttemp.co.uk/showmoreof';
+        $url = Constants::$url.'/showmoreof';
         $post = array(
             'type' => 'rejected',
             'what' => 'bk',
             'paginate_size' => $request->pageSize,
             'page' => $request->page,
             'search' => '',
-            'authenticity_token' => $tokens[1]
+            'authenticity_token' => $request->authToken[1]
         );
 
-        $result=Utils::post($url,$post,$cookies);
+        $result=Utils::post($url,$post,$request->cookies);
 
         $data = array();
 
@@ -135,7 +117,7 @@ class Jobs extends Controller
             foreach ($list['jobs'] as $job) {
                 $detailsID = $job['DetailsID'];
 
-                $timesheetInfo = Utils::get("https://www.studenttemp.co.uk/bookings/$detailsID?type=offered",$cookies);
+                $timesheetInfo = Utils::get(Constants::$url."/bookings/$detailsID?type=offered",$request->cookies);
                 $data[] = $this->getJobData(Utils::getElementsByClass($timesheetInfo,'data'), $job['DetailsID']);
             }
         }
@@ -144,20 +126,17 @@ class Jobs extends Controller
 
     public function expired(Request $request)
     {
-        $cookies = Utils::getCookies($request->cookies);
-        $tokens = Utils::getAuthTokens('https://www.studenttemp.co.uk/bookings#upcoming',$cookies);
-
-        $url = 'https://www.studenttemp.co.uk/showmoreof';
+        $url = Constants::$url.'/showmoreof';
         $post = array(
             'type' => 'expired',
             'what' => 'bk',
             'paginate_size' => $request->pageSize,
             'page' => $request->page,
             'search' => '',
-            'authenticity_token' => $tokens[1]
+            'authenticity_token' => $request->authToken[1]
         );
 
-        $result=Utils::post($url,$post,$cookies);
+        $result=Utils::post($url,$post,$request->cookies);
 
         $data = array();
 
@@ -166,7 +145,7 @@ class Jobs extends Controller
             foreach ($list['jobs'] as $job) {
                 $detailsID = $job['DetailsID'];
 
-                $timesheetInfo = Utils::get("https://www.studenttemp.co.uk/bookings/$detailsID?type=cancelled",$cookies);
+                $timesheetInfo = Utils::get(Constants::$url."/bookings/$detailsID?type=cancelled",$request->cookies);
                 $data[] = $this->getJobData(Utils::getElementsByClass($timesheetInfo,'data'), $job['DetailsID']);
             }
         }
