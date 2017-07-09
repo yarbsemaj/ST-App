@@ -15,6 +15,8 @@ class STCookies
 {
     private $cookies = array();
     private $location = array();
+    private $xss;
+
     public function get($username,$password)
     {
         $doc = new \DomDocument;
@@ -24,6 +26,9 @@ class STCookies
         $inputs = $xp->query('//input[@name="authenticity_token"]');
         $input = $inputs->item(0);
         $at = $input->getAttribute('value');
+
+        $this->xss = $xp->query('/html/head/meta[@name="csrf-token"]/@content')[0]->value;
+
         foreach ($header as $hdr) {
             if (preg_match('/^Set-Cookie:\s*([^;]+)/', $hdr, $matches)) {
                 parse_str($matches[1], $tmp);
@@ -47,17 +52,22 @@ class STCookies
                 $this->location[] = $matches[1];
             }
         }
+
     }
     public function isValid(){
         return count($this->cookies) ==2;
     }
 
-    public function getType(){
-        return explode('/',$this->location[0])[3];
+    public function getLocation(){
+        return $this->location[0];
     }
 
     public function getCookies(){
         return $this->cookies;
+    }
+
+    public function  getXSS(){
+        return $this->xss;
     }
 
 }

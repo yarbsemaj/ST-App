@@ -23,4 +23,8 @@ class RequestTest extends Controller
         $result = file_get_contents($url, false, $context);
         print $result;
     }
+
+    public function post(Request $request){
+        return $request->all();
+    }
 }

@@ -12,6 +12,90 @@ use App\Http\Constants;
 
 class Utils
 {
+    static function getAllOptions($node)
+    {
+        $options = $node->getElementsByTagName('option');
+        $optionInfo = array();
+        foreach ($options as $option) {
+            $value = $option->getAttribute('value');
+            $text = $option->textContent;
+
+            $optionInfo[] = array(
+                'value' => $value,
+                'text' => $text,
+            );
+        }
+        return $optionInfo;
+    }
+
+    static function buildQuery($input, $numeric_prefix = '',
+                               $arg_separator = '&', $enc_type = 2,
+                               $keyvalue_separator = '=', $prefix = '')
+    {
+        if (is_array($input)) {
+            $arr = array();
+            foreach ($input as $key => $value) {
+                $name = $prefix;
+                if (strlen($prefix)) {
+                    $name .= '[';
+                    if (!is_numeric($key)) {
+                        $name .= $key;
+                    }
+                    $name .= ']';
+                } else {
+                    if (is_numeric($key)) {
+                        $name .= $numeric_prefix;
+                    }
+                    $name .= $key;
+                }
+                if ((is_array($value) || is_object($value)) && count($value)) {
+                    $arr[] = buildQuery($value, $numeric_prefix,
+                        $arg_separator, $enc_type,
+                        $keyvalue_separator, $name);
+                } else {
+                    if ($enc_type === 2) {
+                        $arr[] = rawurlencode($name)
+                            . $keyvalue_separator
+                            . rawurlencode($value);
+                    } else {
+                        $arr[] = urlencode($name)
+                            . $keyvalue_separator
+                            . urlencode($value);
+                    }
+                }
+            }
+            return implode($arg_separator, $arr);
+        } else {
+            if ($enc_type === 2) {
+                return rawurlencode($input);
+            } else {
+                return urlencode($input);
+            }
+        }
+    }
+
+    static function getAllPayOptions($node)
+    {
+        $options = $node->getElementsByTagName('option');
+        $optionInfo = array();
+        foreach ($options as $option) {
+            $value = $option->getAttribute('value');
+            $payRate = $option->getAttribute('payrate');
+            $rate = $option->getAttribute('rate');
+            $text = $option->textContent;
+
+            $optionInfo[] = array(
+                'value' => $value,
+                'text' => $text,
+                'additionalInfo' => array(
+                    'payRate' => preg_replace("/[^0-9,.]/", "", $payRate),
+                    'rate' => preg_replace("/[^0-9,.]/", "", $rate)
+                )
+            );
+        }
+        return $optionInfo;
+    }
+
     static function getSelectedOptionValue($node)
     {
         $nodeValue = $node->ownerDocument->saveHTML($node);
@@ -20,6 +104,28 @@ class Utils
         @$doc->loadHTML($nodeValue);
         $finder = new \DomXPath($doc);
         return $finder->query('//option[@selected="selected"]/@value');
+    }
+
+    static function getSelectedOptions($node)
+    {
+        $nodeValue = $node->ownerDocument->saveHTML($node);
+        $doc = new \DomDocument;
+        $doc->validateOnParse = true;
+        @$doc->loadHTML($nodeValue);
+        $finder = new \DomXPath($doc);
+        $options = $finder->query('//option[@selected="selected"]');
+
+        $optionInfo = array();
+        foreach ($options as $option) {
+            $value = $option->getAttribute('value');
+            $text = $option->textContent;
+
+            $optionInfo[] = array(
+                'value' => $value,
+                'text' => $text
+            );
+        }
+        return $optionInfo;
     }
 
     static function getSelectedOptionDisplay($node)
@@ -63,14 +169,14 @@ class Utils
         return substr($string, 0, -1);
     }
 
-    static function post($url, $data, $cookies,&$header=null)
+    static function post($url, $data, $cookies, &$header = null, $xssToken = null, $method = "POST")
     {
         $options = array(
             'http' => array(
                 'header' => "Content-type: application/x-www-form-urlencoded\r\n"
-                    . $cookies."\r\n". Constants::$urlHeader,
-                'method' => 'POST',
-                'content' => http_build_query($data)
+                    . $cookies . "\r\n" . Constants::$urlHeader . "X-CSRF-Token: " . $xssToken . "\r\n",
+                'method' => $method,
+                'content' => self::buildQuery($data)
             )
         );
 
@@ -80,11 +186,11 @@ class Utils
         return ($return);
     }
 
-    static function get($url, $cookies,&$header = null)
+    static function get($url, $cookies, &$header = null)
     {
         $options = array(
             'http' => array(
-                'header' => $cookies."\r\n". Constants::$urlHeader,
+                'header' => $cookies . "\r\n" . Constants::$urlHeader,
                 'method' => 'GET'
             )
         );
@@ -154,9 +260,15 @@ class Utils
 
     }
 
-    static function getAvailability($startTime, $endTime, $cookies)
+    static function getDateFromCal($date){
+        $components = explode(", ",$date);
+        return mktime($components[3],$components[4],0,$components[1]+1,$components[2],$components[0]);
+    }
+
+    static function getAvailability($startTime, $endTime, $cookies,$url ="/availabilities.json?")
     {
-        $url = Constants::$url."/availabilities.json?start=$startTime&end=$endTime";
+        $url = Constants::$url . $url."start=$startTime&end=$endTime";
+
         $str = self::get($url, $cookies);
 
         $str = str_replace('new Date(', '"', $str);
@@ -176,7 +288,7 @@ class Utils
 
     static function getAuthTokens($url, $cookies)
     {
-        $result = self::get($url,$cookies);
+        $result = self::get($url, $cookies);
         $doc = new \DomDocument;
         $doc->validateOnParse = true;
         @$doc->loadHTML($result);
@@ -195,7 +307,7 @@ class Utils
         return $return;
     }
 
-    static function getList($result)
+    static function getList($result,&$allData=array())
     {
         $doc = new \DomDocument;
         $doc->validateOnParse = true;
@@ -225,6 +337,7 @@ class Utils
                 $detailsID = $idList[2];
             }
             $basicInfo = $xpath->query("//div[starts-with(@class, 'small-cell')]");
+            $allData[]=$basicInfo;
             $jobID = trim(preg_replace('/\s\s+/', '', $basicInfo->item(0)->nodeValue));
             $data = array("DetailsID" => $detailsID, "JobID" => $jobID);
             $return[] = $data;
@@ -250,6 +363,18 @@ class Utils
         $finder = new \DomXPath($doc);
         $jobData = $finder->query("//*[contains(@id, '$id')]");
         return $jobData;
+    }
+
+    static function getElementFromJavaScript($tag, $data, $delimiter = "\""){
+        $regXp = '/'.$tag.$delimiter.'([^'.$delimiter.'\\\\]*(?:\\\\.[^'.$delimiter.'\\\\]*)*)'.$delimiter.'/';
+        preg_match_all($regXp, $data, $matches);
+        $match = "";
+        foreach ($matches[1] as $rawMatch){
+            $match .= str_replace("\\","",$rawMatch);
+        }
+        $dom=new \DomDocument;
+        @$dom->loadHTML($match);
+        return $dom->documentElement;
     }
 
 

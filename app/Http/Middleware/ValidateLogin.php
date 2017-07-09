@@ -22,8 +22,9 @@ class ValidateLogin
     {
             $stCookie = new STCookies();
             $stCookie->get($request->email,$request->password);
-            $request->type=$stCookie->getType();
+            $request->location = $stCookie->getLocation();
             $request->cookies=$stCookie->getCookies();
+            $request->xssToken=$stCookie->getXSS();
             if($stCookie->isValid()) {
                 return $next($request);
             } else return response(array("success"=>false));
