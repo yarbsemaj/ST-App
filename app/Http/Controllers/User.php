@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use app\Http\Constants;
-use Illuminate\Http\Request;
 use App\Http\Utils;
+use Illuminate\Http\Request;
 
 class User extends Controller
 {
@@ -62,6 +62,51 @@ class User extends Controller
                         $dataElement->ownerDocument->saveHTML($dataElement),
                         'photoproof_link')[0]->getAttribute('href');
                         break;
+                default:
+                    $return[$fieldNames[$i]] = $dataElement->nodeValue;
+                    break;
+            }
+            $i++;
+        }
+        return $return;
+    }
+
+    function coordinators(Request $request)
+    {
+
+        $url = Constants::$url . '/profile';
+
+        $result = Utils::get($url, $request->cookies);
+
+
+        $list = Utils::getElementsByClass($result, 'data');
+        $data = $this->getCoordinatorInfo($list);
+
+
+        return Utils::response($data);
+    }
+
+    function getCoordinatorInfo($userData)
+    {
+        $return = array();
+        $fieldNames = array("Title", "Name", "JobTitle", "Number", "Email");
+        $i = 0;
+
+        foreach ($userData as $dataElement) {
+            switch ($i) {
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                    $value = Utils::getInputValue($dataElement);
+                    $return[$fieldNames[$i]] = $value->item(0)->getAttribute('value');
+                    break;
+                case 0:
+                    $selectedOption = Utils::getSelectedOptionDisplay($dataElement);
+                    $return[$fieldNames[$i]] = $selectedOption->item(0)->nodeValue;
+                    break;
+                case 5:
+                    break;
                 default:
                     $return[$fieldNames[$i]] = $dataElement->nodeValue;
                     break;

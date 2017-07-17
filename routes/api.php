@@ -1,11 +1,7 @@
 <?php
 
-use Illuminate\Http\Request;
-use App\Http\Middleware\CheckSTLogin;
-use App\Http\Middleware\CheckAlreadyRegistered;
 use App\Http\Middleware\ValidateLogin;
-use App\Http\Middleware\GetCookieString;
-use App\Http\Middleware\GetAuthToken;
+use Illuminate\Http\Request;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,11 +16,14 @@ use App\Http\Middleware\GetAuthToken;
 
 Route::post('test/login',"RequestTest@get");
 Route::post('test/post',"RequestTest@post");
+Route::get('test/get', "RequestTest@post");
+
 
 Route::post('login',function (Request $request){
     return response(array("success"=>true,"type"=>explode('/',$request->location)[3]));
 })->middleware([ValidateLogin::class]);
 Route::post('user/get',"User@get")->middleware('jsonRequest');
+Route::post('coordinators/get', "User@coordinators")->middleware('jsonRequest');
 
 //Student Routs
 
@@ -65,3 +64,8 @@ Route::post('coordinatorTimesheet/disputed',"CoordinatorTimeSheet@disputed")->mi
 Route::post('coordinatorTimesheet/approved',"CoordinatorTimeSheet@approved")->middleware('basicRequest');
 Route::post('coordinatorTimesheet/withStudent',"CoordinatorTimeSheet@withStudent")->middleware('basicRequest');
 Route::post('coordinatorTimesheet/cancelled',"CoordinatorTimeSheet@cancelled")->middleware('basicRequest');
+Route::post('coordinatorTimesheet/warning', "CoordinatorTimeSheet@getWarnings")->middleware('basicRequest');
+Route::post('coordinatorTimesheet/admenBooking', "CoordinatorTimeSheet@amendBooking")->middleware('basicRequest');
+Route::post('coordinatorTimesheet/admenBookings', "CoordinatorTimeSheet@amendBookings")->middleware('basicRequest');
+Route::post('coordinatorTimesheet/cancelTimeSheet', "CoordinatorTimeSheet@cancelTimeSheet")->middleware('basicRequest');
+

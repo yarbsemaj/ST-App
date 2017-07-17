@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Constants;
 use Illuminate\Http\Request;
 
 class RequestTest extends Controller
 {
     public $cookies = array();
     private $valid = false;
+
     public function get(Request $request)
     {
         $username = $request->email;
