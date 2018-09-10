@@ -23,6 +23,7 @@ Route::post('login',function (Request $request){
     return response(array("success"=>true,"type"=>explode('/',$request->location)[3]));
 })->middleware([ValidateLogin::class]);
 Route::post('user/get',"User@get")->middleware('jsonRequest');
+Route::get('user/get/img',"User@getIMG")->middleware('jsonRequest')->name("user.get.img");
 Route::post('coordinators/get', "User@coordinators")->middleware('jsonRequest');
 
 //Student Routs

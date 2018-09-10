@@ -30,6 +30,26 @@ class User extends Controller
         return Utils::response($data);
     }
 
+    function getIMG(Request $request){
+
+        $url = Constants::$url.'/profile';
+
+        $result=Utils::get($url,$request->cookies);
+
+        $id ='profile';
+        $tabs = Utils::getElementsByID($result,$id);
+        $userID= explode ( '_' ,$tabs[0]->attributes['id']->value)[1];
+
+
+        $data['UserID'] = $userID;
+        $headers = array();
+
+        $image = Utils::get("https://www.studenttemp.co.uk/docdownload?dcode=profile_attachments&type=photoproofs&viewno=$userID&view=original",$request->cookies,$headers);
+
+        return response($image,200,
+            ["Content-Type"=>$headers[4]]);
+    }
+
     function getTotalPay($result){
         $class='sideDashboard-header ui-accordion-header ui-helper-reset ui-state-default';
 
@@ -58,9 +78,7 @@ class User extends Controller
                     $return[$fieldNames[$i]] = $selectedOption->item(0)->nodeValue;
                     break;
                 case 5:
-                    $return[$fieldNames[$i]] = Utils::getElementsByID(
-                        $dataElement->ownerDocument->saveHTML($dataElement),
-                        'photoproof_link')[0]->getAttribute('href');
+                    $return[$fieldNames[$i]] = route("user.get.img",["email"=>request()->input("email"),"password"=>request()->input("password")]);
                         break;
                 default:
                     $return[$fieldNames[$i]] = $dataElement->nodeValue;
