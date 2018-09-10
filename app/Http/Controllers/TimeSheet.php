@@ -188,11 +188,15 @@ class TimeSheet extends Controller
         $i = 0;
         $j = 0;
         foreach ($jobData as $job) {
+            //print "<b>$i</b>:".$job->nodeValue."<br>";
             switch ($i) {
                 case 0:
                 case 5:
                 case 14:
                     $return[$fieldNames[$j]] = preg_replace("/[^0-9,.£]/", "", $job->nodeValue);
+                    break;
+                case 15:
+                    $return[$fieldNames[$j]] = preg_replace("/[^0-9.]+/", "", $job->nodeValue);
                     break;
                 case 4:
                     $supervisorPhone = explode (" - ",$job->nodeValue);
